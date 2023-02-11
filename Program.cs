@@ -1,5 +1,6 @@
-global using FoodOrderAPI.Models;
+global using FoodOrderAPI.Models.Entities;
 global using FoodOrderAPI.Data;
+using FoodOrderAPI.Services.ItemService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,10 +10,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddDbContext<DataContext>();
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

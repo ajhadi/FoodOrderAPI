@@ -1,8 +1,7 @@
-namespace FoodOrderAPI.Models
+namespace FoodOrderAPI.Models.Params
 {
-    public class Item
+    public class ItemParam
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public int Price { get; set; }
     }
