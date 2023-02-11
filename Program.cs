@@ -1,3 +1,4 @@
+global using FoodOrderAPI.Models;
 global using FoodOrderAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);

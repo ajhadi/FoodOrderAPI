@@ -16,5 +16,6 @@ namespace FoodOrderAPI.Data
             var db = configuration.GetValue<string>("ConnectionStrings:FoodOrderDb");
             optionsBuilder.UseSqlServer(configuration.GetValue<string>("ConnectionStrings:FoodOrderDb"));
         }
+        public DbSet<Item> Items { get; set; }
     }
 }
