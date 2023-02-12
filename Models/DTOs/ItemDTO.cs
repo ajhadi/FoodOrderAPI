@@ -1,13 +1,13 @@
 using FoodOrderAPI.Models.Enums;
 
-namespace FoodOrderAPI.Models.Entities
+namespace FoodOrderAPI.Models.DTOs
 {
-    public class Item : BaseEntity<int>
+    public class ItemDTO
     {
         public string Name { get; set; }
+        public string Description { get; set; }
         public int Price { get; set; }
         public bool IsReady { get; set; }
         public ItemType Type { get; set; }
-        public virtual ICollection<OrderItem> OrderItems { get; set; }
     }
 }

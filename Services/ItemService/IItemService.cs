@@ -1,14 +1,19 @@
-using FoodOrderAPI.Models.Params;
+using FoodOrderAPI.Models.DTOs;
 
 namespace FoodOrderAPI.Services.ItemService
 {
     public interface IItemService
     {
-        Task<Item> AddItem(ItemParam request);
-        Task<List<Item>> GetAllItems();
-        Task<Item> GetItemById(int id);
-        Task<Item> UpdateSingleItem(int id, ItemParam request);
-        Task<Item> DeleteSingleItem(int id);
+        /// <summary> Add new item </summary>
+        Task<ServiceStatus> AddItem(ItemDTO request);
+        /// <summary> Get list of item </summary>
+        Task<ServiceStatus<List<Item>>> GetItems(ItemQueryDTO param);
+        /// <summary> Get item by Id </summary>
+        Task<ServiceStatus<Item>> GetItem(int id);
+        /// <summary> Update item </summary>
+        Task<ServiceStatus> UpdateItem(int id, ItemDTO request);
+        /// <summary> Delete item </summary>
+        Task<ServiceStatus> DeleteItem(int id);
 
     }
 }

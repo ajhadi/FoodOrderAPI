@@ -1,57 +1,106 @@
-using FoodOrderAPI.Models.Params;
+using FoodOrderAPI.Models.DTOs;
 
 namespace FoodOrderAPI.Services.ItemService
 {
     public class ItemService : IItemService
     {
         private readonly DataContext context;
-        public ItemService(DataContext context)
+        private readonly ILogger<ItemService> logger;
+        public ItemService(DataContext context,
+        ILogger<ItemService> logger)
         {
             this.context = context;
+            this.logger = logger;
         }
-        public async Task<List<Item>> GetAllItems()
+        public async Task<ServiceStatus<List<Item>>> GetItems(ItemQueryDTO param)
         {
-            return await context.Items.ToListAsync();
+            try
+            {
+                var query = await context.Items.AsNoTracking().ToListAsync();
+                if (param.Type is not null) 
+                    query = query.Where(i => i.Type == param.Type).ToList();
+
+                return ServiceStatus.SuccessObjectResult<List<Item>>(query);
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<List<Item>>();
+            }
         }
-        public async Task<Item> GetItemById(int id)
+        public async Task<ServiceStatus<Item>> GetItem(int id)
         {
-            var item = await context.Items.FindAsync(id);
-            if (item is null)
-                return null;
+            try
+            {
+                var result = await context.Items.FindAsync(id);
+                if (result is null)
+                    return ServiceStatus.ErrorResult<Item>(Constants.AppError.ItemIsNotFound);
 
-            return item;
+                return ServiceStatus.SuccessObjectResult<Item>(result);
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<Item>();
+            }
         }
-        public async Task<Item> AddItem(ItemParam request)
+        public async Task<ServiceStatus> AddItem(ItemDTO request)
         {
-            context.Items.Add(new Item {
-                Name = request.Name,
-                Price = request.Price
-            });
-            await context.SaveChangesAsync();
-            return new Item();
+            try
+            {
+                context.Items.Add(new Item
+                {
+                    Name = request.Name,
+                    Price = request.Price,
+                    IsReady = true
+                });
+                await context.SaveChangesAsync();
+                return ServiceStatus.SuccessResult();
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<Item>();
+            }
         }
-        public async Task<Item> UpdateSingleItem(int id, ItemParam request)
+        public async Task<ServiceStatus> UpdateItem(int id, ItemDTO request)
         {
-            var item = await context.FindAsync<Item>(id);
-            if (item is null)
-                return null;
+            try
+            {
+                var item = await context.FindAsync<Item>(id);
+                if (item is null)
+                    return ServiceStatus.ErrorResult<Item>(Constants.AppError.ItemIsNotFound);
 
-            item.Name = request.Name;
-            item.Price = request.Price;
+                item.Name = request.Name;
+                item.Price = request.Price;
+                item.IsReady = request.IsReady;
 
-            await context.SaveChangesAsync();
-
-            return item;
+                await context.SaveChangesAsync();
+                return ServiceStatus.SuccessResult();
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<Item>();
+            }
         }
-        public async Task<Item> DeleteSingleItem(int id)
+        public async Task<ServiceStatus> DeleteItem(int id)
         {
-            var item = await context.FindAsync<Item>(id);
-            if (item is null)
-                return null;
+            try
+            {
+                var item = await context.FindAsync<Item>(id);
+                if (item is null)
+                    return ServiceStatus.ErrorResult<Item>(Constants.AppError.ItemIsNotFound);
 
-            context.Remove(item);
-            await context.SaveChangesAsync();
-            return item;
+                context.Remove(item);
+                await context.SaveChangesAsync();
+                return ServiceStatus.SuccessResult();
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<Item>();
+            }
         }
     }
 }

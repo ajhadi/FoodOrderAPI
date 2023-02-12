@@ -1,11 +1,14 @@
-using FoodOrderAPI.Models.Params;
+using FoodOrderAPI.Extensions;
+using FoodOrderAPI.Models.DTOs;
 using FoodOrderAPI.Services.ItemService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Constants;
 
 namespace FoodOrderAPI.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class ItemController : ControllerBase
 {
     private readonly ILogger<ItemController> logger;
@@ -18,46 +21,54 @@ public class ItemController : ControllerBase
         this.itemService = itemService;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<List<Item>>> GetAllItems()
+    [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
+    public async Task<ActionResult<List<Item>>> GetItems([FromQuery]ItemQueryDTO param)
     {
-        var result = await itemService.GetAllItems();
-        if (result is null)
-            return NotFound("Item not found.");
+        var userId = User.GetUserId();
+        var role = User.GetRole();
+        var result = await itemService.GetItems(param);
+        if (!result.IsSuccess)
+            throw new ApiException(result.Error);
         return Ok(result);
     }
-    [HttpGet]
+
+    [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
     [Route("{id}")]
     public async Task<ActionResult<List<Item>>> GetItem(int id)
     {
-        var result = await itemService.GetItemById(id);
-        if (result is null)
-            return NotFound("Sorry, but this item doesn't exist.");
+        var result = await itemService.GetItem(id);
+        if (!result.IsSuccess)
+            throw new ApiException(result.Error);
         return Ok(result);
     }
-    [HttpPost]
-    public async Task<IActionResult> AddItem(ItemParam request)
+
+    [HttpPost, Authorize(Roles = UserRole.Admin)]
+    public async Task<IActionResult> AddItem(ItemDTO request)
     {
-        await itemService.AddItem(request);
-        return Ok(request);
+        var result = await itemService.AddItem(request);
+        if (!result.IsSuccess)
+            throw new ApiException(result.Error);
+        return StatusCode(StatusCodes.Status201Created);
     }
-    [HttpPut]
+
+    [HttpPut, Authorize(Roles = UserRole.Admin)]
     [Route("{id}")]
-    public async Task<ActionResult<Item>> UpdateItem(int id, ItemParam request)
+    public async Task<ActionResult<Item>> UpdateItem(int id, ItemDTO request)
     {
-        var result = await itemService.UpdateSingleItem(id, request);
-        if (result is null)
-            return NotFound("Sorry, but this item doesn't exist.");
+        var result = await itemService.UpdateItem(id, request);
+        if (!result.IsSuccess)
+            throw new ApiException(result.Error);
         return Ok(result);
 
     }
-    [HttpDelete]
+    
+    [HttpDelete, Authorize(Roles = UserRole.Admin)]
     [Route("{id}")]
     public async Task<ActionResult<Item>> DeleteItem(int id)
     {
-        var result = await itemService.DeleteSingleItem(id);
-        if (result is null)
-            return NotFound("Sorry, but this item doesn't exist.");
+        var result = await itemService.DeleteItem(id);
+        if (!result.IsSuccess)
+            return StatusCode(result.Error.HttpStatusCode, result.Error);
         return Ok(result);
     }
 }
