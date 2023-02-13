@@ -1,6 +1,7 @@
 using FoodOrderAPI.Models.DTOs;
 using FoodOrderAPI.Services.TokenService;
 using FoodOrderAPI.Services.UserService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Constants;
 
@@ -21,22 +22,15 @@ public class TableController : ControllerBase
     /// Get list of table
     /// </summary>
     /// <returns></returns>
-    [HttpGet]
+    [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
     public async Task<ActionResult<List<TableDTO>>> GetTables()
     {
-        var query = await context.Tables.ToListAsync();
-        return Ok(query);
-    }
-
-    /// <summary>
-    /// Get active order on table
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("{id}/ActiveOrder")]
-    public async Task<ActionResult<List<TableDTO>>> GetTables(int id)
-    {
-        var query = await context.Orders.Where(o => (o.TableId == id) && (o.Status == Models.Enums.OrderStatus.Active))
-        .SingleOrDefaultAsync();
+        var query = await context.Tables.Select(o => new TableDTO
+        {
+            Id = o.Id,
+            Name = o.Name,
+            IsReady = o.IsReady
+        }).ToListAsync();
         return Ok(query);
     }
 }
