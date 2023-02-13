@@ -51,6 +51,16 @@ public class OrderController : ControllerBase
             throw new ApiException(result.Error);
         return Ok(result);
     }
+    
+    [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
+    [Route("Active/{tableId}")]
+    public async Task<ActionResult<List<Order>>> GetActiveOrder(int tableId)
+    {
+        var result = await orderService.GetActiveOrder(tableId);
+        if (!result.IsSuccess)
+            throw new ApiException(result.Error);
+        return Ok(result);
+    }
 
     [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
     [Route("/Activity/Report")]
