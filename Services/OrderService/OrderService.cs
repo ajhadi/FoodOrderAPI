@@ -17,6 +17,9 @@ namespace FoodOrderAPI.Services.OrderService
         {
             try
             {
+                var table = await context.Tables.FindAsync(request.TableId);
+                if (!table.IsReady)
+                    return ServiceStatus.ErrorResult(AppError.TableIsNotAvailable);
                 var newOrder = new Order
                 {
                     CustomerName = request.CustomerName,
@@ -39,7 +42,6 @@ namespace FoodOrderAPI.Services.OrderService
                     }
                     newOrder.Total = price;
                 }
-                var table = await context.Tables.FindAsync(request.TableId);
                 table.IsReady = false;
                 await context.SaveChangesAsync();
 
@@ -82,6 +84,24 @@ namespace FoodOrderAPI.Services.OrderService
             {
                 var query = await context.Orders.Include(o => o.OrderItems)
                 .Where(o => o.Id == id).SingleOrDefaultAsync();
+                if (query is null)
+                    return ServiceStatus.ErrorResult<Order>(Constants.AppError.OrderIsNotFound);
+
+                return ServiceStatus.SuccessObjectResult<Order>(query);
+            }
+            catch (System.Exception e)
+            {
+                logger.LogError(e.Message);
+                return ServiceStatus.ErrorResult<Order>();
+            }
+        }
+        public async Task<ServiceStatus<Order>> GetActiveOrder(int tableId)
+        {
+            try
+            {
+                var query = await context.Orders.Include(o => o.OrderItems)
+                .Where(o => o.TableId == tableId && o.Status == Models.Enums.OrderStatus.Active).SingleOrDefaultAsync();
+
                 if (query is null)
                     return ServiceStatus.ErrorResult<Order>(Constants.AppError.OrderIsNotFound);
 
@@ -149,7 +169,6 @@ namespace FoodOrderAPI.Services.OrderService
                     Description = "Update order's detail"
                 });
                 await context.SaveChangesAsync();
-
                 return ServiceStatus.SuccessResult();
             }
             catch (System.Exception e)
@@ -245,5 +264,9 @@ namespace FoodOrderAPI.Services.OrderService
             }
         }
 
+        public Task<ServiceStatus<Order>> GetOrder(int tableId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
