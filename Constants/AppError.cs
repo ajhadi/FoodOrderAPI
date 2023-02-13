@@ -7,5 +7,6 @@ public static partial class Constants
         public static Error UserIsNotFound => Error.Create(StatusCodes.Status404NotFound, 1002, "User is not found");
         public static Error WrongPassword => Error.Create(StatusCodes.Status400BadRequest, 1003, "Password incorrect");
         public static Error OrderIsNotFound => Error.Create(StatusCodes.Status404NotFound, 1004, "Order is not found");
+        public static Error TableIsNotAvailable => Error.Create(StatusCodes.Status403Forbidden, 1005, "Table is not available");
     }
 }
