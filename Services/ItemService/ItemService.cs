@@ -12,20 +12,28 @@ namespace FoodOrderAPI.Services.ItemService
             this.context = context;
             this.logger = logger;
         }
-        public async Task<ServiceStatus<List<Item>>> GetItems(ItemQueryDTO param)
+        public async Task<ServiceStatus<List<ItemDTO>>> GetItems(ItemQueryDTO param)
         {
             try
             {
-                var query = await context.Items.AsNoTracking().ToListAsync();
-                if (param.Type is not null) 
+                var query = await context.Items.AsNoTracking()
+                .Select(o => new ItemDTO
+                {
+                    Id = o.Id,
+                    Name = o.Name,
+                    IsReady = o.IsReady,
+                    Price = o.Price,
+                    Type = o.Type
+                }).ToListAsync();
+                if (param.Type is not null)
                     query = query.Where(i => i.Type == param.Type).ToList();
 
-                return ServiceStatus.SuccessObjectResult<List<Item>>(query);
+                return ServiceStatus.SuccessObjectResult<List<ItemDTO>>(query);
             }
             catch (System.Exception e)
             {
                 logger.LogError(e.Message);
-                return ServiceStatus.ErrorResult<List<Item>>();
+                return ServiceStatus.ErrorResult<List<ItemDTO>>();
             }
         }
         public async Task<ServiceStatus<Item>> GetItem(int id)

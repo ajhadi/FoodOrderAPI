@@ -24,12 +24,10 @@ public class ItemController : ControllerBase
     [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]
     public async Task<ActionResult<List<Item>>> GetItems([FromQuery]ItemQueryDTO param)
     {
-        var userId = User.GetUserId();
-        var role = User.GetRole();
         var result = await itemService.GetItems(param);
         if (!result.IsSuccess)
             throw new ApiException(result.Error);
-        return Ok(result);
+        return Ok(result.Result);
     }
 
     [HttpGet, Authorize(Roles = $"{UserRole.Admin}, {UserRole.Cashier}, {UserRole.Waiter}")]

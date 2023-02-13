@@ -7,7 +7,7 @@ namespace FoodOrderAPI.Services.ItemService
         /// <summary> Add new item </summary>
         Task<ServiceStatus> AddItem(ItemDTO request);
         /// <summary> Get list of item </summary>
-        Task<ServiceStatus<List<Item>>> GetItems(ItemQueryDTO param);
+        Task<ServiceStatus<List<ItemDTO>>> GetItems(ItemQueryDTO param);
         /// <summary> Get item by Id </summary>
         Task<ServiceStatus<Item>> GetItem(int id);
         /// <summary> Update item </summary>
