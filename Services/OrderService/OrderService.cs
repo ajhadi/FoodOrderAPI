@@ -30,13 +30,13 @@ namespace FoodOrderAPI.Services.OrderService
                 await context.Orders.AddAsync(newOrder);
                 if (request.Items is not null)
                 {
+                    newOrder.OrderItems = new List<OrderItem>();
                     int price = 0;
                     foreach (var item in request.Items)
                     {
                         var i = await context.Items.FindAsync(item.ItemId);
                         if (i is null)
                             return ServiceStatus.ErrorResult(AppError.ItemIsNotFound.AddMessage($"Id: {item.ItemId}"));
-                        newOrder.OrderItems = new List<OrderItem>();
                         newOrder.OrderItems.Add(new OrderItem { ItemId = item.ItemId, ProductName = i.Name, Quantity = item.Quantity });
                         price = price + (i.Price * item.Quantity);
                     }
